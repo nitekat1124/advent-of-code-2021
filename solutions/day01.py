@@ -1,5 +1,3 @@
-import math
-from itertools import combinations
 from utils.solution_base import SolutionBase
 
 
@@ -26,13 +24,11 @@ class Solution(SolutionBase):
         print()
 
     def part1(self, data):
-        return self._process(data, entries=2)
+        data = [*map(int, data)]
+        c = sum(1 for i in range(1, len(data)) if data[i] > data[i - 1])
+        return c
 
     def part2(self, data):
-        return self._process(data, entries=3)
-
-    def _process(self, data, entries):
-        data = [int(i) for i in data]
-        for item in combinations(data, entries):
-            if sum(item) == 2020:
-                return math.prod(item)
+        data = [*map(int, data)]
+        c = sum(1 for i in range(1, len(data) - 2) if sum(data[i : i + 3]) > sum(data[i - 1 : i + 2]))
+        return c
