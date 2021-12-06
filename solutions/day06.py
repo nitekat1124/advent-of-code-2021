@@ -40,15 +40,15 @@ class Solution(SolutionBase):
         #     data += [8] * n
         # return len(data)
 
-        fish = [0] * 7
-        fish_new = [0] * 9
+        fish = [0] * 9
 
+        # fish counts for the number of days until it creates a new lanternfish
         for i in data:
             fish[i] += 1
 
         for i in range(days):
-            x = fish[0] + fish_new[0]
+            x = fish[0]
             fish = fish[1:] + [x]
-            fish_new = fish_new[1:] + [x]
+            fish[6] += x
 
-        return sum(fish) + sum(fish_new)
+        return sum(fish)
