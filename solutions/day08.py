@@ -51,3 +51,11 @@ class Solution(SolutionBase):
 
             vals += int("".join(str(mapping.index(val)) for val in outs))
         return vals
+
+    def part2_alt(self, data):
+        # for signals a to g, pre-calculate how many times they will be turn on through 0 to 9
+        # ex: signal a will be turn on 8 times, and signal b will be turn on 6 times...
+        # and for 0 to 9, add all their turned-on signals counts together
+        # ex: number 7 will turn on signals [a, c, f], since a had count 8 times, c had count 8 times and f had count 9 times, so number 7 has a total count as 8+8+9=25
+        count_mapping = [42, 17, 34, 39, 30, 37, 41, 25, 49, 45]
+        return sum(int("".join(str(count_mapping.index(sum(line.split("|")[0].count(val) for val in values))) for values in line.split("|")[1].strip().split())) for line in data)
