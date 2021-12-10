@@ -29,8 +29,8 @@ class Solution(SolutionBase):
     def part1(self, data):
         score = 0
         for line in data:
-            while re.findall(r"\(\)|\[\]|\{\}|\<\>", line):
-                line = re.sub(r"\(\)|\[\]|\{\}|\<\>", "", line)
+            while len(line_shrink := re.sub(r"\(\)|\[\]|\{\}|\<\>", "", line)) < len(line):
+                line = line_shrink
             line = re.sub(r"\(|\[|\{|\<", "", line)
             if len(line):
                 score += [3, 57, 1197, 25137][")]}>".index(line[0])]
@@ -39,8 +39,8 @@ class Solution(SolutionBase):
     def part2(self, data):
         score = []
         for line in data:
-            while re.findall(r"\(\)|\[\]|\{\}|\<\>", line):
-                line = re.sub(r"\(\)|\[\]|\{\}|\<\>", "", line)
+            while len(line_shrink := re.sub(r"\(\)|\[\]|\{\}|\<\>", "", line)) < len(line):
+                line = line_shrink
             if len(line) and len(re.sub(r"\(|\[|\{|\<", "", line)) < 1:
                 score += [reduce(lambda s, c: s * 5 + " ([{<".index(c), line[::-1], 0)]
         return sorted(score)[len(score) // 2]
