@@ -1,3 +1,4 @@
+from collections import Counter
 from utils.solution_base import SolutionBase
 
 
@@ -31,6 +32,7 @@ class Solution(SolutionBase):
     def part2(self, data):
         return self.loop(data, 40)
 
+    """
     def loop(self, data, times):
         polymer = data[0]
         rules = {(a := i.split(" -> "))[0]: a[1] for i in data[2:]}
@@ -56,5 +58,34 @@ class Solution(SolutionBase):
             c[k[1]] = c.get(k[1], 0) + v
         c[polymer[0]] = c.get(polymer[0], 0) + 1
         c[polymer[-1]] = c.get(polymer[-1], 0) + 1
+
+        return (max(c.values()) - min(c.values())) // 2
+    """
+
+    # more easier when use collections.Counter or defaultdict, but Counter is better when create pairs
+    def loop(self, data, times):
+        polymer = data[0]
+        rules = {(a := i.split(" -> "))[0]: a[1] for i in data[2:]}
+
+        pairs = Counter([a + b for a, b in zip(polymer, polymer[1:])])
+
+        for _ in range(times):
+            temp = Counter()
+            for k, v in pairs.items():
+                if k in rules:
+                    k1 = k[0] + rules[k]
+                    k2 = rules[k] + k[1]
+                    temp[k] -= v
+                    temp[k1] += v
+                    temp[k2] += v
+
+            pairs += temp
+
+        c = Counter()
+        for k, v in pairs.items():
+            c[k[0]] += v
+            c[k[1]] += v
+        c[polymer[0]] += 1
+        c[polymer[-1]] += 1
 
         return (max(c.values()) - min(c.values())) // 2
