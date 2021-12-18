@@ -46,17 +46,8 @@ class Solution(SolutionBase):
                 before_pair, pair, after_pair = s[: i - 1], s[i : i + pair_close_pos], s[i + pair_close_pos + 1 :]
                 pair = [*map(int, pair.split(","))]
 
-                all_regulars_before_pair = re.findall(r"\d+", before_pair)
-                if len(all_regulars_before_pair):
-                    reg = all_regulars_before_pair[-1]
-                    reg_pos = before_pair.rindex(reg)
-                    before_pair = before_pair[:reg_pos] + str(int(reg) + pair[0]) + before_pair[reg_pos + len(reg) :]
-
-                all_regulars_after_pair = re.findall(r"\d+", after_pair)
-                if len(all_regulars_after_pair):
-                    reg = all_regulars_after_pair[0]
-                    reg_pos = after_pair.index(reg)
-                    after_pair = after_pair[:reg_pos] + str(int(reg) + pair[1]) + after_pair[reg_pos + len(reg) :]
+                before_pair = self.add_exploded_pair(before_pair, pair, 0)
+                after_pair = self.add_exploded_pair(after_pair, pair, 1)
 
                 return before_pair + "0" + after_pair
             else:
@@ -75,6 +66,14 @@ class Solution(SolutionBase):
             s = before_reg + f"[{elem_left},{elem_right}]" + after_reg
 
         return s
+
+    def add_exploded_pair(self, line, pair, pair_index):
+        all_regulars = re.findall(r"\d+", line)
+        if len(all_regulars):
+            reg = all_regulars[pair_index - 1]
+            reg_pos = [line.rindex, line.index][pair_index](reg)
+            line = line[:reg_pos] + str(int(reg) + pair[pair_index]) + line[reg_pos + len(reg) :]
+        return line
 
     def calc_magnitude(self, s: str):
         while s.count("["):
