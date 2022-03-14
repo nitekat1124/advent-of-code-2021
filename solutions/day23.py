@@ -1,9 +1,10 @@
+from collections import deque
 from utils.solution_base import SolutionBase
 
 
 class Solution(SolutionBase):
     def solve(self, part_num: int):
-        # self.test_runner(part_num)
+        self.test_runner(part_num)
 
         func = getattr(self, f"part{part_num}")
         result = func(self.data)
@@ -27,306 +28,133 @@ class Solution(SolutionBase):
         print()
 
     def part1(self, data):
-        """
-        #############
-        #...........#
-        ###B#B#C#D###
-          #D#C#A#A#
-          #########
+        puzzle = "".join([c for line in data for c in line if c not in "#"])
+        organized = "." * 11 + "ABCD" * ((len(puzzle) - 11) // 4)
 
-        #############
-        #.......D...#   D: 2 steps (2000)
-        ###B#B#C#.###
-          #D#C#A#A#
-          #########
-
-        #############
-        #.......D.A.#   A: 3 steps (3)
-        ###B#B#C#.###
-          #D#C#A#.#
-          #########
-
-        #############
-        #.........A.#   D: 3 steps (3000)
-        ###B#B#C#.###
-          #D#C#A#D#
-          #########
-
-        #############
-        #.......C.A.#   C: 2 steps (200)
-        ###B#B#.#.###
-          #D#C#A#D#
-          #########
-
-        #############
-        #.A.....C.A.#   A: 8 steps (7)
-        ###B#B#.#.###
-          #D#C#.#D#
-          #########
-
-        #############
-        #.A.......A.#   C: 3 steps (300)
-        ###B#B#.#.###
-          #D#C#C#D#
-          #########
-
-        #############
-        #.A.B.....A.#   B: 2 steps (20)
-        ###B#.#.#.###
-          #D#C#C#D#
-          #########
-
-        #############
-        #A..B.....A.#   C: 5 steps (500)
-        ###B#.#C#.###
-          #D#.#C#D#
-          #########
-
-        #############
-        #.A.......A.#   B: 3 steps (30)
-        ###B#.#C#.###
-          #D#B#C#D#
-          #########
-
-        #############
-        #.A.......A.#   B: 4 steps (40)
-        ###.#B#C#.###
-          #D#B#C#D#
-          #########
-
-        #############
-        #.A.......A.#   D: 9 steps (9000)
-        ###.#B#C#D###
-          #.#B#C#D#
-          #########
-
-        #############
-        #.........A.#   A: 4 steps (3)
-        ###.#B#C#D###
-          #A#B#C#D#
-          #########
-
-        #############
-        #...........#   A: 8 steps (8)
-        ###A#B#C#D###
-          #A#B#C#D#
-          #########
-
-        2000 + 3 + 3000 + 200 + 7 + 300 + 20 + 500 + 30 + 40 + 9000 + 3 + 8 = 15111
-        """
-
-        return 15111
+        return self.find_minimal_energy(puzzle, organized)
 
     def part2(self, data):
-        """
-        #############
-        #...........#
-        ###B#B#C#D###
-          #D#C#B#A#
-          #D#B#A#C#
-          #D#C#A#A#
-          #########
+        data = data[:-2] + ["#D#C#B#A#", "#D#B#A#C#"] + data[-2:]
+        puzzle = "".join([c for line in data for c in line if c not in "#"])
+        organized = "." * 11 + "ABCD" * ((len(puzzle) - 11) // 4)
 
-        #############
-        #..........B#   B: 7 steps (70)
-        ###B#.#C#D###
-          #D#C#B#A#
-          #D#B#A#C#
-          #D#C#A#A#
-          #########
+        return self.find_minimal_energy(puzzle, organized)
 
-        #############
-        #.........CB#   C: 4 steps (400)
-        ###B#.#.#D###
-          #D#C#B#A#
-          #D#B#A#C#
-          #D#C#A#A#
-          #########
+    def find_minimal_energy(self, puzzle, organized):
+        energies = []
 
-        #############
-        #.......B.CB#   B: 3 steps (30)
-        ###B#.#.#D###
-          #D#C#.#A#
-          #D#B#A#C#
-          #D#C#A#A#
-          #########
+        start = (puzzle, 0, [puzzle])
+        seen = {puzzle: 0}
 
-        #############
-        #A......B.CB#   A: 9 steps (9)
-        ###B#.#.#D###
-          #D#C#.#A#
-          #D#B#.#C#
-          #D#C#A#A#
-          #########
+        queue = deque([start])
+        while queue:
+            state, energy, history = queue.popleft()
 
-        #############
-        #AA.....B.CB#   A: 9 steps (9)
-        ###B#.#.#D###
-          #D#C#.#A#
-          #D#B#.#C#
-          #D#C#.#A#
-          #########
+            if state == organized:
+                energies += [(energy, history)]
+            else:
+                moves = self.get_next_moves(state, energy)
+                for (next_state, next_energy) in moves:
+                    if next_state not in seen or seen[next_state] > next_energy:
+                        seen[next_state] = next_energy
+                        queue.append((next_state, next_energy, history + [next_state]))
 
-        #############
-        #AA.....B.CB#   C: 8 steps (800)
-        ###B#.#.#D###
-          #D#.#.#A#
-          #D#B#.#C#
-          #D#C#C#A#
-          #########
+        energies = sorted(energies, key=lambda x: x[0])
+        # print(energies[0][1])
+        return energies[0][0]
 
-        #############
-        #AA.B...B.CB#   B: 4 steps (40)
-        ###B#.#.#D###
-          #D#.#.#A#
-          #D#.#.#C#
-          #D#C#C#A#
-          #########
+    def parse_state(self, state):
+        hallway = state[:11]
+        rooms = [[state[11:][k * 4 + i] for k in range((len(state) - 11) // 4)] for i in range(4)]
+        return hallway, rooms
 
-        #############
-        #AA.B...B.CB#   C: 9 steps (900)
-        ###B#.#.#D###
-          #D#.#.#A#
-          #D#.#C#C#
-          #D#.#C#A#
-          #########
+    def get_next_moves(self, state, energy):
+        costs = {"A": 1, "B": 10, "C": 100, "D": 1000}
+        room_door_pos = {"A": 2, "B": 4, "C": 6, "D": 8}
+        hallway_slot_pos = [0, 1, 3, 5, 7, 9, 10]
 
-        #############
-        #AA.....B.CB#   B: 5 steps (50)
-        ###B#.#.#D###
-          #D#.#.#A#
-          #D#.#C#C#
-          #D#B#C#A#
-          #########
+        hallway, rooms = self.parse_state(state)
+        moves = []
 
-        #############
-        #AA.......CB#   B: 6 steps (60)
-        ###B#.#.#D###
-          #D#.#.#A#
-          #D#B#C#C#
-          #D#B#C#A#
-          #########
+        for pos, c in enumerate(hallway):
+            if c != ".":
+                a, b = min(room_door_pos[c], pos), max(room_door_pos[c], pos)
+                if hallway[a + 1 : b].count(".") == (b - a - 1):
+                    target_room = (room_door_pos[c] // 2) - 1
+                    if len(set(rooms[target_room]) - {".", c}) == 0:
+                        next_state, steps = self.hallway_to_room(state, pos, target_room)
+                        moves += [(next_state, energy + steps * costs[c])]
 
-        #############
-        #AA.......CB#   B: 5 steps (50)
-        ###.#.#.#D###
-          #D#B#.#A#
-          #D#B#C#C#
-          #D#B#C#A#
-          #########
+        for room_idx, room in enumerate(rooms):
+            if len(set(room) - {".", "ABCD"[room_idx]}) == 0:
+                continue
 
-        #############
-        #AA........B#   C: 5 steps (500)
-        ###.#.#.#D###
-          #D#B#C#A#
-          #D#B#C#C#
-          #D#B#C#A#
-          #########
+            x = [i for i in room if i != "."][0]
+            target = rooms[room_door_pos[x] // 2 - 1]
+            if len(set(target) - {".", x}) == 0:
+                room1_door_pos = (room_idx + 1) * 2
+                room2_door_pos = room_door_pos[x]
+                a, b = min(room1_door_pos, room2_door_pos), max(room1_door_pos, room2_door_pos)
+                if hallway[a + 1 : b].count(".") == (b - a - 1):
+                    next_state, steps = self.room_to_room(state, room1_door_pos, room2_door_pos)
+                    moves += [(next_state, energy + steps * costs[x])]
+            else:
+                for slot_pos in hallway_slot_pos:
+                    door_pos = (room_idx + 1) * 2
+                    a, b = min(door_pos, slot_pos), max(door_pos, slot_pos)
+                    if hallway[a + 1 : b].count(".") == (b - a - 1) and hallway[slot_pos] == ".":
+                        depth = min([i for i, v in enumerate(room) if v != "."])
+                        next_state, steps = self.room_to_hallway(state, slot_pos, room_idx, depth)
+                        moves += [(next_state, energy + steps * costs[room[depth]])]
 
-        #############
-        #AA.........#   B: 7 steps (70)
-        ###.#B#.#D###
-          #D#B#C#A#
-          #D#B#C#C#
-          #D#B#C#A#
-          #########
+        return moves
 
-        #############
-        #AA...D.....#   D: 4 steps (4000)
-        ###.#B#.#.###
-          #D#B#C#A#
-          #D#B#C#C#
-          #D#B#C#A#
-          #########
+    def hallway_to_room(self, state, pos, target_room):
+        hallway, rooms = self.parse_state(state)
 
-        #############
-        #AA...D....A#   A: 4 steps (4)
-        ###.#B#.#.###
-          #D#B#C#.#
-          #D#B#C#C#
-          #D#B#C#A#
-          #########
+        c = hallway[pos]
+        steps = 0
 
-        #############
-        #AA...D....A#   C: 6 steps (600)
-        ###.#B#C#.###
-          #D#B#C#.#
-          #D#B#C#.#
-          #D#B#C#A#
-          #########
+        next_state = hallway[:pos] + "." + hallway[pos + 1 :]
+        empty = rooms[target_room].count(".")
+        depth = empty - 1
+        rooms[target_room][depth] = c
+        steps += empty
 
-        #############
-        #AA...D...AA#   A: 5 steps (5)
-        ###.#B#C#.###
-          #D#B#C#.#
-          #D#B#C#.#
-          #D#B#C#.#
-          #########
+        next_state += "".join(rooms[i][k] for k in range(len(rooms[0])) for i in range(4))
 
-        #############
-        #AA.......AA#   D: 7 steps (7000)
-        ###.#B#C#.###
-          #D#B#C#.#
-          #D#B#C#.#
-          #D#B#C#D#
-          #########
+        room_door_pos = (target_room + 1) * 2
+        steps += abs(room_door_pos - pos)
 
-        #############
-        #AA.......AA#   D: 11 steps (11000)
-        ###.#B#C#.###
-          #.#B#C#.#
-          #D#B#C#D#
-          #D#B#C#D#
-          #########
+        return next_state, steps
 
-        #############
-        #AA.......AA#   D: 11 steps (11000)
-        ###.#B#C#.###
-          #.#B#C#D#
-          #.#B#C#D#
-          #D#B#C#D#
-          #########
+    def room_to_hallway(self, state, slot_pos, room_idx, depth):
+        hallway, rooms = self.parse_state(state)
 
-        #############
-        #AA.......AA#   D: 11 steps (11000)
-        ###.#B#C#D###
-          #.#B#C#D#
-          #.#B#C#D#
-          #.#B#C#D#
-          #########
+        c = rooms[room_idx][depth]
+        rooms[room_idx][depth] = "."
+        steps = depth + 1
+        next_state = hallway[:slot_pos] + c + hallway[slot_pos + 1 :]
+        next_state += "".join(rooms[i][k] for k in range(len(rooms[0])) for i in range(4))
 
-        #############
-        #A........AA#   A: 5 steps (5)
-        ###.#B#C#D###
-          #.#B#C#D#
-          #.#B#C#D#
-          #A#B#C#D#
-          #########
+        room_door_pos = (room_idx + 1) * 2
+        steps += abs(room_door_pos - slot_pos)
 
-        #############
-        #.........AA#   A: 5 steps (5)
-        ###.#B#C#D###
-          #.#B#C#D#
-          #A#B#C#D#
-          #A#B#C#D#
-          #########
+        return next_state, steps
 
-        #############
-        #..........A#   A: 9 steps (9)
-        ###.#B#C#D###
-          #A#B#C#D#
-          #A#B#C#D#
-          #A#B#C#D#
-          #########
+    def room_to_room(self, state, room1_door_pos, room2_door_pos):
+        hallway, rooms = self.parse_state(state)
 
-        #############
-        #...........#   A: 9 steps (9)
-        ###A#B#C#D###
-          #A#B#C#D#
-          #A#B#C#D#
-          #A#B#C#D#
-          #########
+        room1_idx = room1_door_pos // 2 - 1
+        room2_idx = room2_door_pos // 2 - 1
 
-        70 + 400 + 30 + 9 + 9 + 800 + 40 + 900 + 50 + 60 + 50 + 500 + 70 + 4000 + 4 + 600 + 5 + 7000 + 11000 + 11000 + 11000 + 5 + 5 + 9 + 9 = 47625
-        """
-        return 47625
+        depth1 = min([i for i, v in enumerate(rooms[room1_idx]) if v != "."])
+        depth2 = max([i for i, v in enumerate(rooms[room2_idx]) if v == "."])
+
+        rooms[room2_idx][depth2] = rooms[room1_idx][depth1]
+        rooms[room1_idx][depth1] = "."
+
+        next_state = hallway + "".join(rooms[i][k] for k in range(len(rooms[0])) for i in range(4))
+        steps = abs(room1_door_pos - room2_door_pos) + depth1 + depth2 + 2
+
+        return next_state, steps
