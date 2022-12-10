@@ -1,6 +1,6 @@
 # Advent of Code 2021
 
-My solutions for [Advent of Code 2021](https://adventofcode.com/2021/) using Python3
+My solutions to [Advent of Code 2021](https://adventofcode.com/2021/) using Python3
 
 ```
 usage: app.py [-h] -d day_number -p part_number
